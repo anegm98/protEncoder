@@ -25,8 +25,9 @@ def devide(seqPath, chopSize, outPrefix):
             newFasta = list()
             x = 0
             part += 1
-    SeqIO.write(newFasta, outPrefix+"_part"+str(part)+".fasta",
-                'fasta')
+    if x != 0:
+        SeqIO.write(newFasta, outPrefix+"_part"+str(part)+".fasta",
+                    'fasta')
 
 
 def create_filter(collection, numFreqGO, outPrefix):
@@ -65,6 +66,9 @@ def main():
                                 help="file path of the protein sequences")
     filePathParser.add_argument("-g", "--GOfile",
                                 help="file path of the GOA of proteins")
+    filePathParser.add_argument("-P", "--predictionFile",
+                                help="file path pattern of the predictions to\
+                                      be decoded")
     parser.add_argument("-M", "--method", default="o",
                         help="protein encoding method; o: (defult)onehot,\
                         k: kmers frequency, c: compatibility matrices")
@@ -124,11 +128,14 @@ def main():
     flatten = bool(int(args.flatten))
     PVmodel = args.PVmodelPath
     action = args.enlargenMode
+    predictionFile = args.predictionFile
 
     if not (GOfile is None):
         outPrefix = args.outPrefix if args.outPrefix != "" else GOfile
     elif not (seqPath is None):
         outPrefix = args.outPrefix if args.outPrefix != "" else seqPath
+    elif not (predictionFile is None):
+        outPrefix = args.outPrefix if args.outPrefix != "" else predictionFile
 
     if collection != "":
         GOfilter = create_filter(collection, numFreqGO, outPrefix)
@@ -152,7 +159,7 @@ def main():
                     for name in glob.glob(seqPath):
                         encoder.read(name)
                         encoder.encode()
-                        encoder.dump(name)
+                        encoder.dump(name.rstrip(".fasta"))
                 else:
                     encoder.read(seqPath)
                     encoder.encode()
@@ -193,7 +200,17 @@ def main():
                     oneHotencd.encode()
                     num = name[name.find("part") + 4:-9]
                     oneHotencd.dump(outPrefix+"_part"+num)
-        return 0
+
+        elif not (predictionFile is None):
+            if outPrefix == predictionFile:
+                suffix = "predictions.txt"
+                if "/" in outPrefix:
+                    outPrefix = outPrefix[:outPrefix.rfind("/")]+"/"+suffix
+                else:
+                    outPrefix = suffix
+            oneHotencd = GOencoder()
+            oneHotencd.decode(predictionFile, GOfilter, outPrefix)
+    return 0
 
 
 if __name__ == "__main__":

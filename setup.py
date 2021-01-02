@@ -49,7 +49,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/anegm98/protencoder',
-    version='1.4.6',
+    version='1.5.0',
     zip_safe=False,
     package_data={'protencoder': ['data/*']}
 )

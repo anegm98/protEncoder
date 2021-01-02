@@ -13,7 +13,10 @@ class encoder(object):
         fasta_sequences = SeqIO.parse(seqPath, 'fasta')
         for fasta in fasta_sequences:
             if fasta.id in self.filter or self.filter == []:
-                self.seqDict[fasta.id] = str(fasta.seq)
+                seq = str(fasta.seq)
+                if "*" in seq:
+                    seq = seq.replace("*", "")
+                self.seqDict[fasta.id] = seq
 
     def read_GO(self, filePath):
         if self.filter != []:
